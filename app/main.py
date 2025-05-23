@@ -16,6 +16,8 @@ PASSWORDS_TO_BRUTE_FORCE = [
     "e5f3ff26aa8075ce7513552a9af1882b4fbc2a47a3525000f6eb887ab9622207",
 ]
 
+diapason = 100_000_000
+
 
 def sha256_hash_str(to_hash: str) -> str:
     return sha256(to_hash.encode("utf-8")).hexdigest()
@@ -34,7 +36,7 @@ def worker(start, end, hashes):
 def brute_force_password():
     password_hashes = set(PASSWORDS_TO_BRUTE_FORCE)
     cpu_count = multiprocessing.cpu_count()
-    total_range = 100_000_000
+    total_range = diapason
     chunk_size = total_range // cpu_count
 
     found = []
@@ -43,7 +45,9 @@ def brute_force_password():
             executor.submit(
                 worker,
                 number * chunk_size,
-                (number + 1) * chunk_size, password_hashes)
+                (number + 1) * chunk_size if number != cpu_count - 1 else total_range,
+                password_hashes
+            )
             for number in range(cpu_count)
         ]
         for future in as_completed(futures):
@@ -56,10 +60,11 @@ def brute_force_password():
     return found
 
 
-def brut_force_standard():
+
+def brute_force_standard():
     password_hashes = set(PASSWORDS_TO_BRUTE_FORCE)
     found = []
-    for number in range(100_000_000):
+    for number in range(diapason):
         password = f"{number:08d}"
         hashed_password = sha256(password.encode("utf-8")).hexdigest()
         if hashed_password in password_hashes:
@@ -74,7 +79,7 @@ if __name__ == "__main__":
     print("Elapsed:", end_time - start_time)
 
     start_time_one_process = time.perf_counter()
-    found_passwords = brut_force_standard()
+    found_passwords = brute_force_standard()
     end_time_one_process = time.perf_counter()
 
     print("Found passwords:")
