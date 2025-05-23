@@ -45,8 +45,9 @@ def brute_force_password():
             executor.submit(
                 worker,
                 number * chunk_size,
-                (number + 1) * chunk_size if number != cpu_count - 1 else total_range,
-                password_hashes
+                (number + 1) * chunk_size
+                if number != cpu_count - 1 else total_range,
+                password_hashes,
             )
             for number in range(cpu_count)
         ]
@@ -58,7 +59,6 @@ def brute_force_password():
         print(f"Password №{index_}: {password} -> {hash_val}")
 
     return found
-
 
 
 def brute_force_standard():
